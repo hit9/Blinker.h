@@ -12,12 +12,13 @@ A lightweight signal/event library for C++, similar to Python's blinker, but des
 1. A signal board contains at most N signals.
    Where a signal is just composed of an id and name.
 
-2. A signal's name should be delimited by dots, e.g. "movement.arrived"
+2. A signal's name should be delimited by dots, e.g. "movement.arrived".
+
    Signals are structured into a trie by names in the pre-process stage.
 
 3. A subscriber is just a function.
    It can connect to one or multiple signals by providing signal names,
-   or prefix patterns e.g. "key.*".
+   or prefix patterns e.g. "movement.*".
 
 4. Connections are owned by user, the board doesn't manage them.
 
