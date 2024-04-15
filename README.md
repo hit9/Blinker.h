@@ -6,6 +6,46 @@ blinker.h
 
 A lightweight signal/event library for C++, similar to Python's blinker, but designed to work with ticking loops.
 
+## Code Example
+
+1. Setup board, signals and connections:
+
+   ```cpp
+   // Creates a board.
+   blinker::Board board;
+
+   // Creates signals, returns shared pointers.
+   auto ab = board.NewSignal("a.b");
+   auto ac = board.NewSignal("a.c");
+
+   // Connects to some signals, returns unique pointers
+   auto connection = board.Connect("a.*");
+   ```
+
+2. In your tick function:
+
+   To emit signals (to backend buffer):
+
+   ```cpp
+   ab->Emit(123);
+   ac->Emit("some string");
+   ```
+
+   To poll fired signals (from frontend buffer):
+
+   ```cpp
+   connection->Poll([&](const blinker::SignalId id, std::any data)) {
+     std::cout << std::any_cast<int>(data) << std::endl;
+   };
+   ```
+
+   Finally, don't forget flip the double buffers before this tick end:
+
+   ```cpp
+   board.Flip();
+   ```
+
+Also checkout [example/main.cc](example/main.cc).
 
 ## Mechanism and Concepts
 
@@ -34,46 +74,6 @@ A lightweight signal/event library for C++, similar to Python's blinker, but des
    3. The two should be flipped on each tick.
    4. Each buffer owns a signature of fired signals.
 
-## Code Example
-
-1. Setup board, signals and connections:
-
-   ```cpp
-   // Creates a board.
-   blinker::Board board;
-
-   // Creates signals.
-   auto ab = board.NewSignal("a.b");
-   auto ac = board.NewSignal("a.c");
-
-   // Connects to some signals.
-   auto connection = board.Connect("a.*");
-   ```
-
-2. In your tick function:
-
-   To emit signals (to backend buffer):
-
-   ```cpp
-   ab->Emit(123);
-   ac->Emit("some string");
-   ```
-
-   To poll fired signals (from frontend buffer):
-
-   ```cpp
-   connection->Poll([&](const blinker::SignalId id, std::any data)) {
-     std::cout << std::any_cast<int>(data) << std::endl;
-   };
-   ```
-
-   Finally, don't forget flip the double buffers before this tick end:
-
-   ```cpp
-   board.Flip();
-   ```
-
-Also checkout [example/main.cc](example/main.cc).
 
 License
 -------
