@@ -92,17 +92,18 @@ using Signature = std::bitset<N>;
 // Callback function to be executed on subscribed signal fired.
 using Callback = std::function<void(SignalId, std::any)>;
 
-// util function to split string into parts by delimiter.
+// util function to split string into parts by given delimiter.
 static void split(std::string_view s, std::vector<std::string>& parts, char delimiter) {
-  parts.push_back("");
+  parts.emplace_back();
   for (auto ch : s) ch == '.' ? parts.push_back("") : parts.back().push_back(ch);
 };
 
-// A SignalTrie structure signal ids by names into a tree.
+// A SignalTrie structures signal ids by names into a tree.
 template <std::size_t N>
 class SignalTrie {
  private:
   // Signature of all signals under this tree.
+  // e.g. the node `b` matches all "a.b.*"
   Signature<N> signature;
   // Child tries.
   std::unordered_map<std::string, SignalTrie*> children;
@@ -111,7 +112,7 @@ class SignalTrie {
 
  public:
   SignalTrie() {}
-  ~SignalTrie() {  // free every children recursively
+  ~SignalTrie() {  // free every child recursively
     for (auto p : children) delete p.second;
   }
   // Puts a signal id onto this tree by signal name.
@@ -119,7 +120,7 @@ class SignalTrie {
     std::vector<std::string> parts;
     split(name, parts, '.');
     auto t = this;  // t is the node walked through
-    for (auto& p : parts) {
+    for (const auto& p : parts) {
       // Creates a node if not exist.
       if (t->children.find(p) == t->children.end()) t->children[p] = new SignalTrie();
       // Mark this signal id to its signature.
@@ -128,7 +129,6 @@ class SignalTrie {
     }
     // The last node.
     t->id = id;
-    t->signature[id] = 1;
   }
   // Match signals by given pattern, returns a signature of matched signal ids.
   Signature<N> Match(std::string_view pattern) const {
@@ -136,13 +136,13 @@ class SignalTrie {
     std::vector<std::string> parts;
     split(pattern, parts, '.');
     auto t = this;
-    for (auto& p : parts) {
+    for (const auto& p : parts) {
       // matches all under the subtree
       if (p == "*")
         return t->signature;
-      else {
-        // match by exact name
-        if (t->children.find(p) == t->children.end()) break;  // match failure
+      else {  // match by exact name
+        // match failure, returns empty signature
+        if (t->children.find(p) == t->children.end()) return signature;
         t = t->children.at(p);
       }
     }
@@ -164,26 +164,23 @@ class Buffer {
   Buffer() = default;
   // Clears the buffer.
   void Clear() { fired.reset(); }
+
   // Emits a signal by id and data.
-  void Emit(SignalId id, std::any data) {
-    fired[id] = 1;
-    d[id] = data;
-  }
+  void Emit(SignalId id, std::any data) { fired[id] = 1, d[id] = data; }
+
+  // Poll fired signals matching given signature.
   int Poll(Signature<N> signature, Callback cb, SignalId maxId) {
-    auto x = signature & fired;
-    int cnt = 0;
+    auto match = signature & fired;
     for (int i = 1; i < maxId; i++)
-      if (x[i]) {
-        cb(i, d[i]);
-        cnt++;
-      }
-    return cnt;
+      if (match[i]) cb(i, d[i]);
+    return match.count();
   }
 };
 
 // Forward declarations.
 template <size_t N>
 class Signal;
+
 template <size_t N>
 class Connection;
 
@@ -192,7 +189,7 @@ class Board {
  private:
   // next signal id to use, starts from 1.
   SignalId nextId;
-  // Trie for signals ids structured by name.
+  // Trie of signals ids structured by name.
   SignalTrie<N> tree;
   // Double buffers.
   std::unique_ptr<Buffer<N>> frontend, backend;
@@ -201,6 +198,7 @@ class Board {
   Board() : nextId(1), frontend(std::make_unique<Buffer<N>>()), backend(std::make_unique<Buffer<N>>()) {}
 
   // Creates a new Signal from this board.
+  // Returns nullptr if signal count exceeds N.
   std::shared_ptr<Signal<N>> NewSignal(std::string_view name) {
     if (nextId > N) return nullptr;
     auto id = nextId++;
@@ -209,17 +207,17 @@ class Board {
   }
   // Creates a connection to signals matching a single pattern.
   std::unique_ptr<Connection<N>> Connect(const std::string_view pattern) { return Connect({pattern}); }
-  // Creates a connection to signals matching given patterns.
+  // Creates a connection to signals matching given pattern list.
   std::unique_ptr<Connection<N>> Connect(const std::initializer_list<std::string_view> patterns) {
     Signature<N> signature;
     for (auto& pattern : patterns) signature |= tree.Match(pattern);
     return std::make_unique<Connection<N>>(signature, *this);
   }
-  // Emits a signal to backend buffer.
+  // Emits a signal to backend buffer by signal id.
   void Emit(SignalId id, std::any data) { backend->Emit(id, data); }
-  // Poll fired signals from frontend buffer.
+  // Poll fired signals matching given signature from frontend buffer.
   int Poll(Signature<N> signature, Callback cb) { return frontend->Poll(signature, cb, nextId); }
-  // Flips the internal double buffer.
+  // Flips the internal double buffers.
   void Flip(void) {
     frontend->Clear();
     std::swap(frontend, backend);
@@ -230,12 +228,12 @@ template <size_t N>
 class Signal {
  private:
   std::string_view name;
-  SignalId id;
+  const SignalId id;
   // Reference to the board belongs to.
   Board<N>& board;
 
  public:
-  Signal(std::string_view name, SignalId id, Board<N>& board) : name(name), id(id), board(board) {}
+  Signal(std::string_view name, const SignalId id, Board<N>& board) : name(name), id(id), board(board) {}
   std::string_view Name() const { return name; }
   SignalId Id() const { return id; }
   // Emits this signal.
@@ -246,12 +244,12 @@ template <size_t N>
 class Connection {
  private:
   // Signal ids connected.
-  Signature<N> signature;
+  const Signature<N> signature;
   // Reference to the board belongs to.
   Board<N>& board;
 
  public:
-  Connection(Signature<N> signature, Board<N>& board) : signature(signature), board(board) {}
+  Connection(const Signature<N> signature, Board<N>& board) : signature(signature), board(board) {}
   // Poll from board's frontend buffer for subscribed signals.
   // If there's some signal fired, the given callback function will be called, and returns a positive count of
   // fired signals.
