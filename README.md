@@ -1,7 +1,7 @@
 blinker.h
 ---------
 
-![](https://github.com/hit9/blinker/actions/workflows/tests.yml/badge.svg)
+![](https://github.com/hit9/blinker.h/actions/workflows/tests.yml/badge.svg)
 ![](https://img.shields.io/badge/license-BSD3-brightgreen)
 
 A lightweight signal/event library for C++, similar to Python's blinker, but designed to work with ticking loops.
