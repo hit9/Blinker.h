@@ -74,6 +74,28 @@ Also checkout [example/main.cc](example/main.cc).
    3. The two should be flipped on each tick.
    4. Each buffer owns a signature of fired signals.
 
+## Instant Poll
+
+In blinker.h's typical design, subscribers handle signals delayed in the next tick,
+if you wanna some signals (such as user's inputs) to be handled as quick as possible, instantly in the current tick,
+just make a standalone board for those signals, and flip before logics `Update` function, for an example:
+
+```cpp
+// there're two boards:
+// inputBoard: signals from user inputs.
+// internalBoard: for internal signals emitting and handling
+while (...) {
+
+    handleInputEvents();  // transfer to signals
+    inputBoard.Flip();  // flip fired signals to frontend.
+
+    Update(); // main logics Update
+    Draw(); // render stuffs.
+
+    internalBoard.Flip();
+}
+```
+
 
 License
 -------
