@@ -64,7 +64,7 @@
 //        board.Flip();
 //      }
 
-// Version: 0.1.1
+// Version: 0.1.2
 
 #ifndef HIT9_BLINKER_H
 #define HIT9_BLINKER_H
@@ -211,6 +211,9 @@ class Board {
   std::unique_ptr<Connection<N>> Connect(const std::string_view pattern) { return Connect({pattern}); }
   // Creates a connection to signals matching given pattern list.
   std::unique_ptr<Connection<N>> Connect(const std::initializer_list<std::string_view> patterns) {
+    return Connect(std::vector<std::string_view>(patterns));
+  }
+  std::unique_ptr<Connection<N>> Connect(const std::vector<std::string_view>& patterns) {
     Signature<N> signature;
     for (auto& pattern : patterns) signature |= tree.Match(pattern);
     return std::make_unique<Connection<N>>(signature, *this);
