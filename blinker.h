@@ -64,7 +64,7 @@
 //        board.Flip();
 //      }
 
-// Version: 0.1.0
+// Version: 0.1.1
 
 #ifndef HIT9_BLINKER_H
 #define HIT9_BLINKER_H
@@ -81,12 +81,14 @@
 
 namespace blinker {
 
+static const std::size_t DefaultNSignal = 1024;
+
 // SignalId is the type of signal id, starts from 1.
 using SignalId = uint16_t;
 
 // Signature matches a chunk of signal ids.
 // The n'th bit setting to 1 means the n'th signal is matched.
-template <std::size_t N>
+template <std::size_t N = DefaultNSignal>
 using Signature = std::bitset<N>;
 
 // Callback function to be executed on subscribed signal fired.
@@ -99,7 +101,7 @@ static void split(std::string_view s, std::vector<std::string>& parts, char deli
 };
 
 // A SignalTrie structures signal ids by names into a tree.
-template <std::size_t N>
+template <std::size_t N = DefaultNSignal>
 class SignalTrie {
  private:
   // Signature of all signals under this tree.
@@ -152,7 +154,7 @@ class SignalTrie {
   }
 };
 
-template <size_t N>
+template <size_t N = DefaultNSignal>
 class Buffer {
  private:
   // A signature stores all ids of fired signals.
@@ -178,13 +180,13 @@ class Buffer {
 };
 
 // Forward declarations.
-template <size_t N>
+template <size_t N = DefaultNSignal>
 class Signal;
 
-template <size_t N>
+template <size_t N = DefaultNSignal>
 class Connection;
 
-template <size_t N = 1024>
+template <size_t N = DefaultNSignal>
 class Board {
  private:
   // next signal id to use, starts from 1.
