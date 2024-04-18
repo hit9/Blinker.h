@@ -64,7 +64,7 @@
 //        board.Flip();
 //      }
 
-// Version: 0.1.2
+// Version: 0.1.3
 
 #ifndef HIT9_BLINKER_H
 #define HIT9_BLINKER_H
@@ -226,6 +226,11 @@ class Board {
   void Flip(void) {
     frontend->Clear();
     std::swap(frontend, backend);
+  }
+  // Clears the internal buffers.
+  void Clear(void) {
+    frontend->Clear();
+    backend->Clear();
   }
 };
 
