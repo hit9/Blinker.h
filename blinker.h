@@ -64,13 +64,14 @@
 //        board.Flip();
 //      }
 
-// Version: 0.1.4
+// Version: 0.1.5
 
 #ifndef HIT9_BLINKER_H
 #define HIT9_BLINKER_H
 
 #include <any>
 #include <bitset>
+#include <cassert>
 #include <cstdint>
 #include <functional>
 #include <initializer_list>
@@ -240,19 +241,25 @@ class Board : public IBoardPoller<N>, public IBoardEmitter {
 
   // Creates a new Signal from this board.
   // Returns nullptr if signal count exceeds N.
-  std::shared_ptr<Signal> NewSignal(std::string_view name) {
-    if (nextId > N) return nullptr;
+  [[nodiscard]] std::shared_ptr<Signal> NewSignal(std::string_view name) {
+    if (nextId >= N) {
+      assert(0);
+      return nullptr;
+    }
     auto id = nextId++;
     tree.Put(name, id);
     return std::make_shared<Signal>(name, id, this);
   }
   // Creates a connection to signals matching a single pattern.
-  std::unique_ptr<Connection<N>> Connect(const std::string_view pattern) { return Connect({pattern}); }
+  [[nodiscard]] std::unique_ptr<Connection<N>> Connect(const std::string_view pattern) {
+    return Connect({pattern});
+  }
   // Creates a connection to signals matching given pattern list.
-  std::unique_ptr<Connection<N>> Connect(const std::initializer_list<std::string_view> patterns) {
+  [[nodiscard]] std::unique_ptr<Connection<N>> Connect(
+      const std::initializer_list<std::string_view> patterns) {
     return Connect(std::vector<std::string_view>(patterns));
   }
-  std::unique_ptr<Connection<N>> Connect(const std::vector<std::string_view>& patterns) {
+  [[nodiscard]] std::unique_ptr<Connection<N>> Connect(const std::vector<std::string_view>& patterns) {
     Signature<N> signature;
     for (auto& pattern : patterns) signature |= tree.Match(pattern);
     return std::make_unique<Connection<N>>(signature, this);

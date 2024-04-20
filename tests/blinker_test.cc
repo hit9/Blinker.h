@@ -108,3 +108,4 @@ TEST_CASE("blinker/1", "[blinker test - simple]") {
   REQUIRE(conn4CallbackCalled);
   REQUIRE(conn5CallbackCalled);
 }
+
