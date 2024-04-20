@@ -223,6 +223,8 @@ class Connection {
   int Poll(Callback cb) { return board->Poll(signature, cb); }
 };
 
+// The board of signals.
+// Where the N is at least (the max number of signals in this board + 1).
 template <size_t N = DefaultNSignal>
 class Board : public IBoardPoller<N>, public IBoardEmitter {
  private:
