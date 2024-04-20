@@ -1,3 +1,9 @@
+0.1.5
+-----
+
+* Add nodiscard to NewSignal and Connect methods.
+* Assert failure if signals count exceed N in debug mode
+
 0.1.4
 -----
 
