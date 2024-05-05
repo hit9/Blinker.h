@@ -6,6 +6,8 @@ blinker.h
 
 A lightweight signal/event library for C++, similar to Python's blinker, but designed to work with ticking loops.
 
+中文博客: https://writings.sh/post/blinker
+
 ## Code Example
 
 1. Setup board, signals and connections:
