@@ -64,7 +64,7 @@
 //        board.Flip();
 //      }
 
-// Version: 0.1.6
+// Version: 0.1.7
 
 #ifndef HIT9_BLINKER_H
 #define HIT9_BLINKER_H
@@ -195,7 +195,7 @@ class IBoardPoller {
 
 class Signal {
  private:
-  std::string_view name;
+  std::string name;
   const SignalId id;
   // Reference to the board belongs to.
   IBoardEmitter* board;
