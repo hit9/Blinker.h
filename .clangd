@@ -1,0 +1,5 @@
+If:
+  PathMatch: blinker.h
+
+CompileFlags:
+  Add: [-std=c++17]
