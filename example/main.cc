@@ -27,9 +27,10 @@ int main(void) {
   };
 
   // Assuming your main tick function here.
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 3; i++) {
     // Emit some signals (to backend).
     taskStarted->Emit(i);
+    taskEnded->Emit(i);
     taskEnded->Emit(i);
     actionStarted->Emit(i);
 

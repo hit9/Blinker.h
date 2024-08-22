@@ -76,7 +76,6 @@
 #include <functional>
 #include <initializer_list>
 #include <memory>
-#include <queue>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
@@ -162,27 +161,28 @@ class Buffer {
   // A signature stores all ids of fired signals.
   Signature<N> fired;
   // d[j] collects the data for fired signal j.
-  std::queue<std::any> d[N];
+  std::vector<std::any> d[N];  // TODO: here the memory? maybe unordered_map?
 
  public:
   Buffer() = default;
   // Clears the buffer.
-  void Clear() { fired.reset(); }
+  void Clear() {
+    fired.reset();
+    // Only need to clear data for fired signals.
+    for (int i = 0; i < N; ++i)
+      if (fired[i]) d[i].clear();
+  }
 
   // Emits a signal by id and data.
-  void Emit(SignalId id, std::any data) { fired[id] = 1, d[id].push(data); }
+  void Emit(SignalId id, std::any data) { fired[id] = 1, d[id].push_back(data); }
 
   // Poll fired signals matching given signature.
   int Poll(const Signature<N>& signature, const Callback& cb, SignalId maxId) {
     auto match = signature & fired;
     for (int i = 1; i < maxId; i++) {
       if (!match[i]) continue;
-      auto& q = d[i];
-      while (q.size()) {
-        auto data = q.front();
-        q.pop();
-        cb(i, data);
-      }
+      // a signal may emit for multiple times during a frame.
+      for (int j = 0; j < d[i].size(); ++j) cb(i, d[i][j]);
     }
     return match.count();
   }
