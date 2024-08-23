@@ -1,3 +1,8 @@
+0.1.9
+-----
+
+* Fix that signal can be emit for multiple time during a frame.
+
 0.1.5
 -----
 

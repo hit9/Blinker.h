@@ -109,3 +109,40 @@ TEST_CASE("blinker/1", "[blinker test - simple]") {
   REQUIRE(conn5CallbackCalled);
 }
 
+TEST_CASE("multiple emits") {
+  blinker::Board board;
+  auto signal1 = board.NewSignal("a.b.c");
+  auto signal2 = board.NewSignal("a.b.d");
+  auto signal3 = board.NewSignal("a.c");
+
+  auto conn1 = board.Connect("a.*");
+  auto conn2 = board.Connect("a.b.*");
+  auto conn3 = board.Connect("a.c");
+
+  int conn1CalledTimes = 0, conn2CalledTimes = 0, conn3CalledTimes = 0;
+
+  struct Data {
+    int value;
+    Data(int v) : value(v) {}
+  };
+
+  auto tick = [&]() {
+    signal1->Emit(std::make_shared<Data>(1));
+    signal2->Emit(std::make_shared<Data>(2));
+    signal2->Emit(std::make_shared<Data>(2));
+    signal3->Emit(std::make_shared<Data>(3));
+
+    conn1->Poll([&](const blinker::SignalId id, std::any data) { ++conn1CalledTimes; });
+    conn2->Poll([&](const blinker::SignalId id, std::any data) { ++conn2CalledTimes; });
+    conn3->Poll([&](const blinker::SignalId id, std::any data) { ++conn3CalledTimes; });
+
+    board.Flip();
+  };
+
+  tick();
+  tick();
+
+  REQUIRE(conn1CalledTimes == 1 + 2 + 1);
+  REQUIRE(conn2CalledTimes == 1 + 2);
+  REQUIRE(conn3CalledTimes == 1);
+}

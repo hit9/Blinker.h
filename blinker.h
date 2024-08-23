@@ -64,7 +64,7 @@
 //        board.Flip();
 //      }
 
-// Version: 0.1.8
+// Version: 0.1.9
 
 #ifndef HIT9_BLINKER_H
 #define HIT9_BLINKER_H
@@ -160,22 +160,30 @@ class Buffer {
  private:
   // A signature stores all ids of fired signals.
   Signature<N> fired;
-  // d[j] is the data for fired signal j.
-  std::any d[N];
+  // d[j] collects the data for fired signal j.
+  std::unordered_map<int, std::vector<std::any>> d;
 
  public:
   Buffer() = default;
   // Clears the buffer.
-  void Clear() { fired.reset(); }
+  void Clear() {
+    fired.reset();
+    // Only need to clear data for fired signals.
+    for (int i = 0; i < N; ++i)
+      if (fired[i]) d[i].clear();
+  }
 
   // Emits a signal by id and data.
-  void Emit(SignalId id, std::any data) { fired[id] = 1, d[id] = data; }
+  void Emit(SignalId id, std::any data) { fired[id] = 1, d[id].push_back(data); }
 
   // Poll fired signals matching given signature.
   int Poll(const Signature<N>& signature, const Callback& cb, SignalId maxId) {
     auto match = signature & fired;
-    for (int i = 1; i < maxId; i++)
-      if (match[i]) cb(i, d[i]);
+    for (int i = 1; i < maxId; i++) {
+      if (!match[i]) continue;
+      // a signal may emit for multiple times during a frame.
+      for (int j = 0; j < d[i].size(); ++j) cb(i, d[i][j]);
+    }
     return match.count();
   }
 };
