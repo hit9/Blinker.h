@@ -161,7 +161,7 @@ class Buffer {
   // A signature stores all ids of fired signals.
   Signature<N> fired;
   // d[j] collects the data for fired signal j.
-  std::unordered_map<int, std::vector<std::any>> d;
+  std::unordered_map<SignalId, std::vector<std::any>> d;
 
  public:
   Buffer() = default;
