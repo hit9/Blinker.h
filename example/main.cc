@@ -31,7 +31,6 @@ int main(void) {
     // Emit some signals (to backend).
     taskStarted->Emit(i);
     taskEnded->Emit(i);
-    taskEnded->Emit(i);
     actionStarted->Emit(i);
 
     // Poll from frontend.
