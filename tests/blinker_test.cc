@@ -123,6 +123,7 @@ TEST_CASE("multiple emits") {
 
   struct Data {
     int value;
+    Data(int v) : value(v) {}
   };
 
   auto tick = [&]() {
