@@ -1,5 +1,5 @@
 // Copyright (c) 2024 Chao Wang <hit9@icloud.com>.
-// License: BSD. https://github.com/hit9/blinker.h
+// License: BSD. https://github.com/hit9/Blinker.h
 
 // A lightweight signal/event library for C++, similar to Python's
 // blinker, but designed to work with ticking loops.
@@ -33,9 +33,9 @@
 //
 // Pre-process stage:
 //
-//   1. Creates a blinker board:
+//   1. Creates a Blinker board:
 //
-//      blinker::Board<N> board;
+//      Blinker::Board<N> board;
 //
 //   2. Register signals:
 //
@@ -56,7 +56,7 @@
 //      while(true) {
 //
 //        // Inside your main Update(), poll fired signals from frontend buffer.
-//        connection->Poll([&](const blinker::SignalId id, std::any data) {
+//        connection->Poll([&](const Blinker::SignalId id, std::any data) {
 //          // executes if any signals fired
 //        });
 //
