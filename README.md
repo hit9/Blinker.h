@@ -1,4 +1,4 @@
-blinker.h
+Blinker.h
 ---------
 
 ![](https://github.com/hit9/blinker.h/actions/workflows/tests.yml/badge.svg)
@@ -14,7 +14,7 @@ A lightweight signal/event library for C++, similar to Python's blinker, but des
 
    ```cpp
    // Creates a board.
-   blinker::Board board;
+   Blinker::Board board;
 
    // Creates signals, returns shared pointers.
    auto ab = board.NewSignal("a.b");
@@ -36,7 +36,7 @@ A lightweight signal/event library for C++, similar to Python's blinker, but des
    To poll fired signals (from frontend buffer):
 
    ```cpp
-   connection->Poll([&](const blinker::SignalId id, std::any data)) {
+   connection->Poll([&](const Blinker::SignalId id, std::any data)) {
      std::cout << std::any_cast<int>(data) << std::endl;
    };
    ```
@@ -78,7 +78,7 @@ Also checkout [example/main.cc](example/main.cc).
 
 ## Instant Poll
 
-In blinker.h's typical design, subscribers handle signals delayed in the next tick,
+In Blinker.h's typical design, subscribers handle signals delayed in the next tick,
 if you wanna some signals (such as user's inputs) to be handled as quick as possible, instantly in the current tick,
 just make a standalone board for those signals, and flip before logics `Update` function, for an example:
 
